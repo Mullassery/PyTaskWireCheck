@@ -1,0 +1,108 @@
+[build-system]
+requires = ["setuptools>=77.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyTaskWireCheck"
+version = "0.1.0"
+description = "Local-first, dependency-aware task orchestration engine (DAG scheduler + content-addressed cache + CLI)."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "Georgi Mullassery" }]
+keywords = [
+    "task",
+    "tasks",
+    "orchestration",
+    "dag",
+    "workflow",
+    "scheduler",
+    "pipeline",
+    "build",
+    "local-first",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = [
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+]
+release = [
+    "build>=1.0",
+    "twine>=4.0",
+]
+
+[project.scripts]
+pytaskwirecheck = "pytaskwirecheck.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Mullassery/PyTaskWireCheck"
+Repository = "https://github.com/Mullassery/PyTaskWireCheck"
+Issues = "https://github.com/Mullassery/PyTaskWireCheck/issues"
+Changelog = "https://github.com/Mullassery/PyTaskWireCheck/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/Mullassery/PyTaskWireCheck#readme"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pytaskwirecheck*"]
+
+[tool.setuptools.package-data]
+pytaskwirecheck = ["py.typed"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+# UP (pyupgrade) is intentionally omitted: the project targets Python 3.9 and
+# uses explicit typing constructs and %-formatting by design.
+select = ["E", "F", "I", "N", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files embed long subprocess command strings in configuration fixtures.
+"tests/*" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-q"
+
+[tool.coverage.run]
+branch = true
+source = ["pytaskwirecheck"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+ignore_missing_imports = true
