@@ -286,7 +286,7 @@ class CacheStore:
         if not task.cache_eligible:
             return {
                 "eligible": False,
-                "reason": "task declares no inputs or outputs",
+                "reason": "task declares no outputs",
             }
         fp = self.fingerprint(task, dependency_keys)
         entry = self._entries / fp.key

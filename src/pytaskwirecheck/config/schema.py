@@ -98,12 +98,14 @@ class TaskConfig:
     def cache_eligible(self) -> bool:
         """Whether the task may produce/consume cache entries.
 
-        A task with no declared inputs and no declared outputs is treated as
-        non-cacheable by default, because PyTaskWireCheck cannot know what it touches.
+        A task must declare at least one output to be cacheable. An
+        input-only task has nothing to store, so marking it eligible would
+        advertise a cache entry that :meth:`CacheStore.store` never writes
+        (PyTaskWireCheck cannot know what result to restore).
         """
         if not self.cache:
             return False
-        return bool(self.inputs or self.outputs)
+        return bool(self.outputs)
 
 
 @dataclass(frozen=True)
