@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "outputs": {
+    "md": [
+      "overview.md",
+      "pytaskwirecheck.2.1.md",
+      "src.2.md"
+    ],
+    "html": [
+      "overview.html",
+      "pytaskwirecheck.2.1.html",
+      "src.2.html"
+    ]
+  }
+}
