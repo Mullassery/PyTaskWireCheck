@@ -35,8 +35,10 @@ from pytaskwirecheck.cache.fingerprint import (
     DEFAULT_RELEVANT_ENV,
     Fingerprint,
     compute_fingerprint,
+    diff_fingerprints,
     hash_file,
 )
+from pytaskwirecheck.cache.remote import RemoteCache
 from pytaskwirecheck.config.loader import state_dir
 from pytaskwirecheck.config.schema import TaskConfig
 from pytaskwirecheck.diagnostics.errors import CacheError
@@ -102,6 +104,7 @@ class CacheStore:
         relevant_env: Sequence[str] = DEFAULT_RELEVANT_ENV,
         max_bytes: Optional[int] = DEFAULT_MAX_BYTES,
         max_entries: Optional[int] = DEFAULT_MAX_ENTRIES,
+        remote: Optional[RemoteCache] = None,
     ) -> None:
         self._root = root.resolve()
         self._base = state_dir(self._root) / "cache"
@@ -112,6 +115,7 @@ class CacheStore:
         self._relevant_env = tuple(relevant_env)
         self._max_bytes = max_bytes
         self._max_entries = max_entries
+        self._remote = remote
 
     @property
     def location(self) -> Path:
@@ -138,6 +142,9 @@ class CacheStore:
         fp = self.fingerprint(task, dependency_keys)
         entry = self._entries / fp.key
         meta_path = entry / "meta.json"
+        if not meta_path.is_file() and self._remote is not None:
+            # Best-effort shared-cache fetch. A miss or failure is just a miss.
+            self._remote.fetch(fp.key, entry)
         if not meta_path.is_file():
             return None
         try:
@@ -254,6 +261,8 @@ class CacheStore:
             shutil.rmtree(stage_dir, ignore_errors=True)
             raise CacheError("failed to store cache entry: %s" % exc) from exc
         self.evict(protect=fp.key)
+        if self._remote is not None:
+            self._remote.push(fp.key, self._entries / fp.key)
         return fp.key
 
     def _collect_outputs(
@@ -350,10 +359,51 @@ class CacheStore:
 
     # -- inspection ---------------------------------------------------------
 
+    def load_payload(self, key: str) -> Optional[dict]:
+        """Return the stored fingerprint payload for ``key``, if it exists."""
+        meta_path = self._entries / key / "meta.json"
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+        payload = meta.get("fingerprint")
+        return payload if isinstance(payload, dict) else None
+
+    def latest_key(self, task_id: str) -> Optional[str]:
+        """Return the most recently written cache key for ``task_id``."""
+        if not self._entries.is_dir():
+            return None
+        newest: Optional[tuple[float, str]] = None
+        for child in self._entries.iterdir():
+            if not child.is_dir():
+                continue
+            try:
+                meta = json.loads((child / "meta.json").read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if meta.get("task_id") != task_id:
+                continue
+            try:
+                mtime = child.stat().st_mtime
+            except OSError:
+                mtime = 0.0
+            if newest is None or mtime > newest[0]:
+                newest = (mtime, child.name)
+        return newest[1] if newest else None
+
     def explain(
-        self, task: TaskConfig, dependency_keys: Mapping[str, Optional[str]]
+        self,
+        task: TaskConfig,
+        dependency_keys: Mapping[str, Optional[str]],
+        *,
+        against: Optional[str] = None,
     ) -> dict:
-        """Explain why a task would hit or miss the cache."""
+        """Explain why a task would hit or miss the cache.
+
+        When ``against`` is a cache key (or ``"latest"``), the current
+        fingerprint is diffed against that entry's stored fingerprint so the
+        caller can see exactly which component changed.
+        """
         if not task.cache:
             return {"eligible": False, "reason": "caching disabled for task"}
         if not task.cache_eligible:
@@ -363,26 +413,38 @@ class CacheStore:
             }
         fp = self.fingerprint(task, dependency_keys)
         entry = self._entries / fp.key
+        diff = None
+        against_key = None
+        if against is not None:
+            against_key = self.latest_key(task.id) if against == "latest" else against
+            if against_key is not None:
+                previous = self.load_payload(against_key)
+                if previous is not None:
+                    diff = diff_fingerprints(previous, fp.payload)
+        base = {
+            "eligible": True,
+            "hit": False,
+            "key": fp.key,
+            "inputs": [asdict(f) for f in fp.inputs],
+            "missing_patterns": list(fp.missing_patterns),
+            "env_names": list(fp.env_names),
+        }
+        if diff is not None:
+            base["against"] = against_key
+            base["diff"] = diff
         if not (entry / "meta.json").is_file():
-            return {
-                "eligible": True,
-                "hit": False,
-                "key": fp.key,
-                "reason": "no cache entry for computed fingerprint",
-                "inputs": [asdict(f) for f in fp.inputs],
-                "missing_patterns": list(fp.missing_patterns),
-                "env_names": list(fp.env_names),
-            }
+            base["reason"] = "no cache entry for computed fingerprint"
+            return base
         meta = json.loads((entry / "meta.json").read_text(encoding="utf-8"))
         valid = self._verify_artifacts(entry, meta.get("artifacts", []))
-        return {
-            "eligible": True,
-            "hit": valid,
-            "key": fp.key,
-            "reason": "entry valid" if valid else "entry corrupted",
-            "inputs": [asdict(f) for f in fp.inputs],
-            "artifacts": meta.get("artifacts", []),
-        }
+        base.update(
+            {
+                "hit": valid,
+                "reason": "entry valid" if valid else "entry corrupted",
+                "artifacts": meta.get("artifacts", []),
+            }
+        )
+        return base
 
     def status(self) -> dict:
         if not self._entries.is_dir():
@@ -393,6 +455,7 @@ class CacheStore:
                 "corrupted": 0,
                 "max_bytes": self._max_bytes,
                 "max_entries": self._max_entries,
+                "remote_enabled": self._remote is not None,
             }
         entries = 0
         corrupted = 0
@@ -417,6 +480,7 @@ class CacheStore:
             "corrupted": corrupted,
             "max_bytes": self._max_bytes,
             "max_entries": self._max_entries,
+            "remote_enabled": self._remote is not None,
         }
 
     def clean(self) -> dict:

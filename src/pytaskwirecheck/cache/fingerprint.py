@@ -174,3 +174,90 @@ def compute_fingerprint(
         missing_patterns=tuple(missing),
         env_names=tuple(sorted(selected_env.keys())),
     )
+
+
+def diff_fingerprints(
+    previous: Mapping[str, object], current: Mapping[str, object]
+) -> dict:
+    """Explain which fingerprint components changed between two payloads.
+
+    The result is intentionally structured rather than a sentence, so the CLI
+    can render a human summary and ``--json`` consumers can assert on it.
+    """
+    components: Dict[str, dict] = {}
+
+    for key in (
+        "command",
+        "shell",
+        "cwd",
+        "timeout_seconds",
+        "input_patterns",
+        "outputs",
+        "runtime",
+    ):
+        before = previous.get(key)
+        after = current.get(key)
+        if before != after:
+            components[key] = {"before": before, "after": after}
+
+    before_env = previous.get("env") or {}
+    after_env = current.get("env") or {}
+    if before_env != after_env:
+        env_changes = {
+            "added": sorted(set(after_env) - set(before_env)),
+            "removed": sorted(set(before_env) - set(after_env)),
+            "changed": sorted(
+                name
+                for name in set(before_env) & set(after_env)
+                if before_env[name] != after_env[name]
+            ),
+        }
+        components["env"] = env_changes
+
+    before_deps = previous.get("dependencies") or {}
+    after_deps = current.get("dependencies") or {}
+    if before_deps != after_deps:
+        dep_changes = {
+            "added": sorted(set(after_deps) - set(before_deps)),
+            "removed": sorted(set(before_deps) - set(after_deps)),
+            "changed": sorted(
+                name
+                for name in set(before_deps) & set(after_deps)
+                if before_deps[name] != after_deps[name]
+            ),
+        }
+        components["dependencies"] = dep_changes
+
+    def _index(items: object) -> Dict[str, dict]:
+        result: Dict[str, dict] = {}
+        for item in items or []:  # type: ignore[union-attr]
+            if isinstance(item, Mapping) and "path" in item:
+                result[str(item["path"])] = dict(item)
+        return result
+
+    before_inputs = _index(previous.get("inputs"))
+    after_inputs = _index(current.get("inputs"))
+    if before_inputs != after_inputs:
+        added = sorted(set(after_inputs) - set(before_inputs))
+        removed = sorted(set(before_inputs) - set(after_inputs))
+        modified = sorted(
+            path
+            for path in set(before_inputs) & set(after_inputs)
+            if before_inputs[path].get("sha256") != after_inputs[path].get("sha256")
+            or before_inputs[path].get("size") != after_inputs[path].get("size")
+        )
+        components["inputs"] = {
+            "added": added,
+            "removed": removed,
+            "modified": modified,
+        }
+
+    return {
+        "changed": bool(components),
+        "components": components,
+        "summary": (
+            "no fingerprint component changed"
+            if not components
+            else "changed: " + ", ".join(sorted(components))
+        ),
+    }

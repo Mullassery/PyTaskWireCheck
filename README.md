@@ -141,6 +141,12 @@ ok: 3 succeeded in 5.11s
 | **Persistence** | local run history (SQLite, WAL) and optional webhook notifications |
 | **Library** | `Workflow.from_file(...).run()` and functional helpers |
 
+## Audit findings
+
+The 2026-10-19 implementation audit — including the `explain --against`
+fingerprint-diff work, verification results, and remaining gaps — is recorded
+in [`AUDIT_FINDINGS.md`](AUDIT_FINDINGS.md).
+
 ## Command-line reference
 
 ```
@@ -154,12 +160,18 @@ pytaskwirecheck [-C ROOT] [--config PATH] [--no-color] COMMAND ...
       [--json] [-q] [--no-output] [--tui]
   cache status [--json]           show cache statistics
   cache clean [--force] [--json]  remove cached data
-  explain TASK [--json]           explain scheduling and cache status for a task
+  explain TASK [--against KEY|latest] [--json]
+                                  explain scheduling/cache status; optionally
+                                  diff against a stored fingerprint
   history [--limit N] [--json]    show recent execution summaries
 ```
 
 `run` accepts task names and runs only those tasks plus their dependencies. Add
 `--json` for a machine-readable summary, and `-q` to silence progress.
+
+Set `cache.remote_url` (HTTP/S) to share cache entries across machines/CI; it
+is off by default, best-effort, and never changes a task result. See
+[`docs/caching.md`](docs/caching.md#shared-remote-cache).
 
 ### Exit codes
 
@@ -227,6 +239,11 @@ Disable it globally (`[cache] enabled = false`), per task (`cache = false`), or
 per run (`pytaskwirecheck run --no-cache`). Inspect decisions with
 `pytaskwirecheck explain TASK`.
 
+Add `--against latest` (or a specific cache key) to see exactly which
+fingerprint component changed — inputs added/removed/modified, environment
+variables added/removed/changed (names only), dependencies, command, cwd,
+runtime, and timeout. Without `--against`, the output is the same as before.
+
 ## Execution semantics
 
 Every task moves through an explicit state machine:
@@ -281,7 +298,7 @@ Read the full design in [docs/architecture.md](docs/architecture.md).
 
 ## Status
 
-PyTaskWireCheck is **0.1.0** — a complete, tested horizontal slice: config → graph →
+PyTaskWireCheck is **0.2.0** — a complete, tested horizontal slice: config → graph →
 scheduler → runner → cache → CLI → TUI → history → notifications. See
 [docs/implementation-status.md](docs/implementation-status.md) for the verified
 breakdown. It is pre-1.0, so the configuration schema is versioned (`version = 1`)

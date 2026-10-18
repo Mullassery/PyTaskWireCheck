@@ -299,3 +299,42 @@ def test_cache_evict_command_is_idempotent(tmp_path):
     result = store.evict()
     assert result == {"removed_entries": 0, "removed_bytes": 0}
     assert store.status()["max_entries"] == 1
+
+
+def test_diff_fingerprints_reports_modified_inputs(tmp_path):
+    from pytaskwirecheck.cache.fingerprint import diff_fingerprints
+
+    _write(tmp_path, BUILD_CONFIG)
+    (tmp_path / "src.txt").write_text("one")
+    config = load_config(tmp_path / "pytaskwirecheck.toml")
+    task = config.get("build")
+    store = _store(tmp_path)
+    before = store.fingerprint(task, {}).payload
+
+    (tmp_path / "src.txt").write_text("two")
+    after = store.fingerprint(task, {}).payload
+
+    diff = diff_fingerprints(before, after)
+    assert diff["changed"] is True
+    assert diff["components"]["inputs"]["modified"] == ["src.txt"]
+    assert diff["components"]["inputs"]["added"] == []
+    assert diff["components"]["inputs"]["removed"] == []
+
+
+def test_explain_against_latest_reports_fingerprint_diff(tmp_path):
+    _write(tmp_path, BUILD_CONFIG)
+    (tmp_path / "src.txt").write_text("one")
+    store = _store(tmp_path)
+    _run(tmp_path, store)
+
+    config = load_config(tmp_path / "pytaskwirecheck.toml")
+    task = config.get("build")
+    old_key = store.latest_key("build")
+    assert old_key is not None
+
+    (tmp_path / "src.txt").write_text("two")
+    detail = store.explain(task, {}, against="latest")
+
+    assert detail["against"] == old_key
+    assert detail["diff"]["changed"] is True
+    assert detail["diff"]["components"]["inputs"]["modified"] == ["src.txt"]

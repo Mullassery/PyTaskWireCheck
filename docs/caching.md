@@ -85,3 +85,26 @@ The cache is bounded by `cache.max_entries` (default 1000) and `cache.max_bytes`
 (default 1 GiB) in `pytaskwirecheck.toml`; after each commit the least-recently-used
 entries are evicted until both hold. Set either to `0` to disable that bound. An
 entry counts as "used" when it is restored (a cache hit), not when written.
+
+
+## Shared (remote) cache
+
+The cache is local by default. Set a remote endpoint to share entries across
+machines or CI jobs:
+
+```toml
+[cache]
+remote_url = "https://cache.example.internal/taskwire"
+remote_token = "..."   # optional; sent as a bearer token
+remote_timeout_seconds = 10
+```
+
+Protocol: `GET <remote_url>/<key>.tgz` returns a tar.gz of a cache entry, or
+404; `PUT` stores it. The archive contains `meta.json` and `artifacts/...`
+exactly like the local entry. Downloads are verified with the existing
+artifact sha256/size checks, and extraction rejects absolute paths, `..`
+components, symlinks, and non-file entries.
+
+Remote access is best-effort: a download failure is a local miss, and an
+upload failure never changes a task's result or exit code. Local entries remain
+authoritative and can be used with the remote offline.

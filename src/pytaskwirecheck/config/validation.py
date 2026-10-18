@@ -43,7 +43,15 @@ _EXECUTION_KEYS = {
     "default_timeout_seconds",
     "fail_fast",
 }
-_CACHE_KEYS = {"enabled", "relevant_env", "max_bytes", "max_entries"}
+_CACHE_KEYS = {
+    "enabled",
+    "relevant_env",
+    "max_bytes",
+    "max_entries",
+    "remote_url",
+    "remote_token",
+    "remote_timeout_seconds",
+}
 _HISTORY_KEYS = {"enabled", "max_runs"}
 _NOTIFICATIONS_KEYS = {"enabled", "url", "timeout_seconds", "max_attempts", "on"}
 _TASK_KEYS = {
@@ -303,11 +311,27 @@ def _build_cache(raw: Mapping[str, Any]) -> CacheConfig:
         if max_entries_raw == 0
         else _as_int(max_entries_raw, "cache.max_entries", minimum=1)
     )
+    remote_url = _as_str(table.get("remote_url", ""), "cache.remote_url")
+    remote_token = _as_str(table.get("remote_token", ""), "cache.remote_token")
+    remote_timeout = _as_number(
+        table.get("remote_timeout_seconds", 10.0),
+        "cache.remote_timeout_seconds",
+        exclusive_minimum=0.0,
+    )
+    if remote_url:
+        from urllib.parse import urlparse
+
+        scheme = urlparse(remote_url).scheme
+        if scheme not in ("http", "https"):
+            raise ConfigError("cache.remote_url must use http or https")
     return CacheConfig(
         enabled=enabled,
         relevant_env=tuple(relevant_env),
         max_bytes=max_bytes,
         max_entries=max_entries,
+        remote_url=remote_url,
+        remote_token=remote_token,
+        remote_timeout_seconds=remote_timeout,
     )
 
 

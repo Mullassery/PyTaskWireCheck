@@ -19,6 +19,8 @@ notifications. This page records what is implemented and how it is verified.
 | Streaming process runner (groups, timeout, output budget) | ✅ Done | `processes/runner.py`, `processes/signals.py` |
 | Content-addressed cache (fingerprint, store, policy) | ✅ Done | `cache/` |
 | CLI (`init` `validate` `graph` `plan` `run` `cache` `explain` `history`) | ✅ Done | `cli.py` |
+| Fingerprint diff for `explain --against KEY\|latest` | ✅ Done | `cache/fingerprint.py`, `cache/store.py`, `cli.py` |
+| Opt-in HTTP shared cache (`cache.remote_url`) | ✅ Done | `cache/remote.py`, `cache/store.py`, `config/` |
 | Plain reporter + live TUI dashboard | ✅ Done | `tui/renderer.py`, `tui/app.py` |
 | Artifacts + structured JSONL logging | ✅ Done | `logging/` |
 | Local history (SQLite, WAL) | ✅ Done | `history/store.py` |
@@ -40,7 +42,7 @@ mypy src/pytaskwirecheck
 
 Current status on Python 3.9:
 
-- `pytest` — **132 passed**
+- `pytest` — **138 passed**
 - `ruff check` — clean
 - `ruff format --check` — clean
 - `mypy src/pytaskwirecheck` — clean

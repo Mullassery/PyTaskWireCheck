@@ -125,6 +125,9 @@ class CacheConfig:
     relevant_env: Tuple[str, ...] = DEFAULT_RELEVANT_ENV
     max_bytes: Optional[int] = 1_073_741_824
     max_entries: Optional[int] = 1000
+    remote_url: str = ""
+    remote_token: str = ""
+    remote_timeout_seconds: float = 10.0
 
 
 @dataclass(frozen=True)

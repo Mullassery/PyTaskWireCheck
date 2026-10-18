@@ -207,6 +207,12 @@ def build_parser() -> argparse.ArgumentParser:
         "explain", help="explain scheduling and cache status for a task"
     )
     p_explain.add_argument("task", help="task identifier")
+    p_explain.add_argument(
+        "--against",
+        metavar="KEY|latest",
+        help="diff the current fingerprint against a stored cache entry key "
+        "(or 'latest' for this task)",
+    )
     p_explain.add_argument("--json", action="store_true")
     p_explain.set_defaults(func=cmd_explain)
 
@@ -562,7 +568,7 @@ def cmd_explain(args: argparse.Namespace) -> int:
     if decision.use_cache:
         store = build_store(config)
         dependency_keys = {dep: None for dep in node.depends_on}
-        detail: dict = store.explain(task, dependency_keys)
+        detail: dict = store.explain(task, dependency_keys, against=args.against)
         detail["note"] = "dependency cache keys assumed absent; a real run may differ"
         info["cache_detail"] = detail
     if args.json:
@@ -584,6 +590,35 @@ def cmd_explain(args: argparse.Namespace) -> int:
             % cache_detail.get("key", cache_detail.get("reason", "n/a"))
         )
         print("  cache hit: %s" % cache_detail.get("hit", False))
+        diff = cache_detail.get("diff")
+        if diff:
+            print("  against: %s" % cache_detail.get("against", "?"))
+            print("  changed: %s" % diff.get("summary", "unknown"))
+            components = diff.get("components", {})
+            for name in ("command", "shell", "cwd", "timeout_seconds", "runtime"):
+                if name in components:
+                    print(
+                        "    %s: %r -> %r"
+                        % (name, components[name]["before"], components[name]["after"])
+                    )
+            env = components.get("env")
+            if env:
+                print(
+                    "    env: added=%s removed=%s changed=%s"
+                    % (env["added"], env["removed"], env["changed"])
+                )
+            deps = components.get("dependencies")
+            if deps:
+                print(
+                    "    dependencies: added=%s removed=%s changed=%s"
+                    % (deps["added"], deps["removed"], deps["changed"])
+                )
+            inputs = components.get("inputs")
+            if inputs:
+                print(
+                    "    inputs: added=%s removed=%s modified=%s"
+                    % (inputs["added"], inputs["removed"], inputs["modified"])
+                )
     return EXIT_OK
 
 

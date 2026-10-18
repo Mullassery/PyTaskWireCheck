@@ -1,5 +1,7 @@
 # Roadmap
 
+> 2026-10-19 implementation findings: see [`../AUDIT_FINDINGS.md`](../AUDIT_FINDINGS.md).
+
 PyTaskWireCheck 0.1.0 is a complete horizontal slice. This is where it is heading;
 nothing here is a commitment, and the configuration schema is versioned so that
 changes can be made honestly.
@@ -8,17 +10,22 @@ changes can be made honestly.
 
 - **More runners.** First-class adapters for common ecosystems (Python virtualenv
   discovery, Node, containers) behind the existing process interface.
-- **Cache eviction.** Size- and age-based pruning (`cache clean --older-than`,
-  `--max-size`) on top of today's whole-cache clean.
-- **Richer `explain`.** Show exactly which fingerprint component changed between
-  two runs.
+- ~~**Cache eviction.** Size- and age-based pruning on top of the whole-cache
+  clean.~~ Shipped in 0.1.2 as LRU `cache.max_entries`/`cache.max_bytes` and
+  `cache evict`.
+- ~~**Richer `explain`.** Show exactly which fingerprint component changed
+  between two runs.~~ Shipped: `explain TASK --against KEY|latest` diffs the
+  current fingerprint against a stored cache entry (inputs, env names, command,
+  dependencies, runtime, and more).
 - **Watch mode.** Re-run the affected subgraph when inputs change.
 - **Structured output.** A stable JSON schema for `run --json` across versions.
 
 ## Mid term
 
-- **Remote cache backend.** An opt-in shared cache (the backend interface already
-  exists) for teams and CI, still disabled by default and strictly opt-in.
+- ~~**Remote cache backend.** An opt-in shared cache for teams and CI.~~
+  Shipped as `cache.remote_url` / `remote_token` / `remote_timeout_seconds`
+  (HTTP/S GET/PUT of a per-key tar.gz). Disabled by default; failures are
+  local misses and never change a task result.
 - **Resource limits.** CPU/memory ceilings where the platform allows it.
 - **Plugin entry points.** Discover task presets and runners via
   `importlib.metadata`.

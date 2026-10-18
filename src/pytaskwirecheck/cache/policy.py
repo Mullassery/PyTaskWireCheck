@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping, Optional
 
+from pytaskwirecheck.cache.remote import RemoteCache
 from pytaskwirecheck.cache.store import CacheStore
 from pytaskwirecheck.config.schema import TaskConfig, WorkflowConfig
 
@@ -42,10 +43,18 @@ def build_store(
     base_env: Optional[Mapping[str, str]] = None,
 ) -> CacheStore:
     """Construct a :class:`CacheStore` for ``config``."""
+    remote = None
+    if config.cache.remote_url:
+        remote = RemoteCache(
+            config.cache.remote_url,
+            token=config.cache.remote_token,
+            timeout_seconds=config.cache.remote_timeout_seconds,
+        )
     return CacheStore(
         config.project.root,
         base_env=base_env,
         relevant_env=config.cache.relevant_env,
         max_bytes=config.cache.max_bytes,
         max_entries=config.cache.max_entries,
+        remote=remote,
     )
