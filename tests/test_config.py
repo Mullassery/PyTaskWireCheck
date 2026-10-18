@@ -279,3 +279,42 @@ def test_cache_eligible_requires_io(make_config):
         """
     )
     assert config.tasks["a"].cache_eligible is False
+
+
+def test_cache_eviction_bounds_parse(make_config):
+    config = make_config(
+        """
+        [cache]
+        max_bytes = 2048
+        max_entries = 5
+        [tasks.a]
+        command = ["true"]
+        """
+    )
+    assert config.cache.max_bytes == 2048
+    assert config.cache.max_entries == 5
+
+
+def test_cache_eviction_bounds_default(make_config):
+    config = make_config(
+        """
+        [tasks.a]
+        command = ["true"]
+        """
+    )
+    assert config.cache.max_bytes == 1_073_741_824
+    assert config.cache.max_entries == 1000
+
+
+def test_cache_eviction_bounds_zero_means_unlimited(make_config):
+    config = make_config(
+        """
+        [cache]
+        max_bytes = 0
+        max_entries = 0
+        [tasks.a]
+        command = ["true"]
+        """
+    )
+    assert config.cache.max_bytes is None
+    assert config.cache.max_entries is None

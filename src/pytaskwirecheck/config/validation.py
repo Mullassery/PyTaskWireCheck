@@ -43,7 +43,7 @@ _EXECUTION_KEYS = {
     "default_timeout_seconds",
     "fail_fast",
 }
-_CACHE_KEYS = {"enabled", "relevant_env"}
+_CACHE_KEYS = {"enabled", "relevant_env", "max_bytes", "max_entries"}
 _HISTORY_KEYS = {"enabled", "max_runs"}
 _NOTIFICATIONS_KEYS = {"enabled", "url", "timeout_seconds", "max_attempts", "on"}
 _TASK_KEYS = {
@@ -290,7 +290,25 @@ def _build_cache(raw: Mapping[str, Any]) -> CacheConfig:
         relevant_env = DEFAULT_RELEVANT_ENV
     else:
         relevant_env = _as_str_list(relevant_raw, "cache.relevant_env")
-    return CacheConfig(enabled=enabled, relevant_env=tuple(relevant_env))
+    # 0 means "no limit"; an omitted key keeps the default bound.
+    max_bytes_raw = table.get("max_bytes", 1_073_741_824)
+    max_bytes = (
+        None
+        if max_bytes_raw == 0
+        else _as_int(max_bytes_raw, "cache.max_bytes", minimum=1)
+    )
+    max_entries_raw = table.get("max_entries", 1000)
+    max_entries = (
+        None
+        if max_entries_raw == 0
+        else _as_int(max_entries_raw, "cache.max_entries", minimum=1)
+    )
+    return CacheConfig(
+        enabled=enabled,
+        relevant_env=tuple(relevant_env),
+        max_bytes=max_bytes,
+        max_entries=max_entries,
+    )
 
 
 def _build_history(raw: Mapping[str, Any]) -> HistoryConfig:

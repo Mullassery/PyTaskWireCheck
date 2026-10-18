@@ -123,6 +123,8 @@ class CacheConfig:
 
     enabled: bool = True
     relevant_env: Tuple[str, ...] = DEFAULT_RELEVANT_ENV
+    max_bytes: Optional[int] = 1_073_741_824
+    max_entries: Optional[int] = 1000
 
 
 @dataclass(frozen=True)

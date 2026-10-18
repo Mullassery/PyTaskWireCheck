@@ -46,4 +46,6 @@ def build_store(
         config.project.root,
         base_env=base_env,
         relevant_env=config.cache.relevant_env,
+        max_bytes=config.cache.max_bytes,
+        max_entries=config.cache.max_entries,
     )

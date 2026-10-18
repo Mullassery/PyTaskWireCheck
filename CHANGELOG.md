@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-18
+
+### Added
+- **LRU cache eviction.** The cache is now bounded by `cache.max_entries`
+  (default 1000) and `cache.max_bytes` (default 1 GiB); after each commit the
+  least-recently-used entries are evicted until both hold (an entry is "used" on a
+  restore, not on write). Set either to `0` to disable that bound. New
+  `pytaskwirecheck cache evict` command and `cache status` fields for the limits
+  (RECHECK-060).
+
 ## [0.1.1] - 2026-10-17
 
 ### Fixed

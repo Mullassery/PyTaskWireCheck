@@ -196,6 +196,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_cache_clean.add_argument("--json", action="store_true")
     p_cache_clean.set_defaults(func=cmd_cache_clean)
+    p_cache_evict = cache_sub.add_parser(
+        "evict", help="evict least-recently-used entries to honor the size/count bounds"
+    )
+    p_cache_evict.add_argument("--json", action="store_true")
+    p_cache_evict.set_defaults(func=cmd_cache_evict)
 
     # explain
     p_explain = sub.add_parser(
@@ -510,6 +515,21 @@ def cmd_cache_clean(args: argparse.Namespace) -> int:
         print(json.dumps(result, indent=2))
     else:
         print("Removed %.2f KiB" % (result["removed_bytes"] / 1024.0))
+    return EXIT_OK
+
+
+def cmd_cache_evict(args: argparse.Namespace) -> int:
+    config = _load(args)
+    store = build_store(config)
+    result = store.evict()
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        noun = "entry" if result["removed_entries"] == 1 else "entries"
+        print(
+            "Evicted %d %s (%.2f KiB)"
+            % (result["removed_entries"], noun, result["removed_bytes"] / 1024.0)
+        )
     return EXIT_OK
 
 

@@ -79,7 +79,9 @@ Current status on Python 3.9:
 
 - Only caching for tasks that declare `inputs`/`outputs`; undeclared inputs can
   cause stale hits (documented in [caching.md](caching.md)).
-- No cache eviction beyond whole-cache clean (see [roadmap.md](roadmap.md)).
+- Cache entries are evicted least-recently-used when `cache.max_entries` /
+  `cache.max_bytes` are exceeded (defaults: 1000 entries, 1 GiB); set either to
+  `0` for no bound, or run `pytaskwirecheck cache evict` on demand.
 - One execution backend: local subprocesses. No distributed or container runners.
 - The cache is per-project and not shared between machines.
 - Dashboards require a TTY; otherwise the plain reporter is used.

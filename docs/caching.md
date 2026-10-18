@@ -77,5 +77,11 @@ pytaskwirecheck cache status            # entries, size, corruption
 pytaskwirecheck cache status --json
 pytaskwirecheck cache clean             # interactive confirmation
 pytaskwirecheck cache clean --force     # no prompt
+pytaskwirecheck cache evict             # drop least-recently-used entries now
 pytaskwirecheck explain <task>          # per-task cache decision and key
 ```
+
+The cache is bounded by `cache.max_entries` (default 1000) and `cache.max_bytes`
+(default 1 GiB) in `pytaskwirecheck.toml`; after each commit the least-recently-used
+entries are evicted until both hold. Set either to `0` to disable that bound. An
+entry counts as "used" when it is restored (a cache hit), not when written.

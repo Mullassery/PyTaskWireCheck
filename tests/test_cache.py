@@ -251,3 +251,51 @@ def test_fingerprint_uses_dependency_keys(tmp_path):
     fp1 = compute_fingerprint(task, tmp_path, {"dep": "aaa"}, base_env={})
     fp2 = compute_fingerprint(task, tmp_path, {"dep": "bbb"}, base_env={})
     assert fp1.key != fp2.key
+
+
+def test_cache_evicts_least_recently_used_over_entry_bound(tmp_path):
+    import time
+
+    from pytaskwirecheck.cache.store import CacheStore
+
+    _write(tmp_path, BUILD_CONFIG)
+    store = CacheStore(tmp_path, base_env={}, max_entries=2, max_bytes=None)
+    keys = []
+    for i in range(4):
+        (tmp_path / "src.txt").write_text("v%d" % i)
+        (tmp_path / "out.txt").write_text("V%d" % i)
+        task = load_config(tmp_path / "pytaskwirecheck.toml").tasks["build"]
+        keys.append(store.store(task, {}))
+        time.sleep(0.01)
+
+    entries = {p.name for p in (store.location / "entries").iterdir() if p.is_dir()}
+    assert entries == {keys[-2], keys[-1]}
+    assert store.status()["max_entries"] == 2
+    assert store.status()["entries"] == 2
+
+
+def test_cache_evicts_over_byte_budget(tmp_path):
+    from pytaskwirecheck.cache.store import CacheStore
+
+    _write(tmp_path, BUILD_CONFIG)
+    store = CacheStore(tmp_path, base_env={}, max_bytes=1, max_entries=None)
+    last = None
+    for i in range(3):
+        (tmp_path / "src.txt").write_text("payload-%d" % i)
+        (tmp_path / "out.txt").write_text("PAYLOAD-%d" % i)
+        task = load_config(tmp_path / "pytaskwirecheck.toml").tasks["build"]
+        last = store.store(task, {})
+
+    entries = {p.name for p in (store.location / "entries").iterdir() if p.is_dir()}
+    # The just-committed entry is protected; older ones are evicted to fit.
+    assert entries == {last}
+
+
+def test_cache_evict_command_is_idempotent(tmp_path):
+    from pytaskwirecheck.cache.store import CacheStore
+
+    _write(tmp_path, BUILD_CONFIG)
+    store = CacheStore(tmp_path, base_env={}, max_entries=1, max_bytes=None)
+    result = store.evict()
+    assert result == {"removed_entries": 0, "removed_bytes": 0}
+    assert store.status()["max_entries"] == 1

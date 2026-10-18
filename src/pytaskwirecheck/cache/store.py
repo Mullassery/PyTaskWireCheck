@@ -14,6 +14,8 @@ Correctness rules:
 * Restores verify artifact integrity first; a corrupt or partial entry is a
   miss, never a false success.
 * Restoration is confined to the workspace root.
+* The cache is bounded: after each commit, least-recently-used entries are
+  evicted until ``max_entries``/``max_bytes`` hold (see :meth:`CacheStore.evict`).
 """
 
 from __future__ import annotations
@@ -41,6 +43,13 @@ from pytaskwirecheck.diagnostics.errors import CacheError
 
 _LOCK_TIMEOUT = 10.0
 _LOCK_POLL = 0.05
+
+#: Default bound on total cache size (1 GiB) before least-recently-used
+#: entries are evicted. ``None`` disables the byte bound.
+DEFAULT_MAX_BYTES: Optional[int] = 1_073_741_824
+#: Default bound on the number of entries before least-recently-used entries
+#: are evicted. ``None`` disables the entry-count bound.
+DEFAULT_MAX_ENTRIES: Optional[int] = 1000
 
 
 class _CommitLock:
@@ -91,6 +100,8 @@ class CacheStore:
         *,
         base_env: Optional[Mapping[str, str]] = None,
         relevant_env: Sequence[str] = DEFAULT_RELEVANT_ENV,
+        max_bytes: Optional[int] = DEFAULT_MAX_BYTES,
+        max_entries: Optional[int] = DEFAULT_MAX_ENTRIES,
     ) -> None:
         self._root = root.resolve()
         self._base = state_dir(self._root) / "cache"
@@ -99,6 +110,8 @@ class CacheStore:
         self._locks = self._base / "locks"
         self._base_env = base_env
         self._relevant_env = tuple(relevant_env)
+        self._max_bytes = max_bytes
+        self._max_entries = max_entries
 
     @property
     def location(self) -> Path:
@@ -142,7 +155,19 @@ class CacheStore:
             return None
         if not self._restore_artifacts(entry, artifacts):
             return None
+        self._touch(entry)
         return fp.key
+
+    def _touch(self, entry: Path) -> None:
+        """Mark an entry as most-recently-used by bumping its directory mtime.
+
+        The entry directory's mtime (not the artifact files', which are what
+        integrity checks read) is the LRU clock used by :meth:`evict`.
+        """
+        try:
+            os.utime(entry, None)
+        except OSError:
+            pass
 
     def _verify_artifacts(self, entry: Path, artifacts: List[dict]) -> bool:
         for artifact in artifacts:
@@ -228,6 +253,7 @@ class CacheStore:
         except OSError as exc:
             shutil.rmtree(stage_dir, ignore_errors=True)
             raise CacheError("failed to store cache entry: %s" % exc) from exc
+        self.evict(protect=fp.key)
         return fp.key
 
     def _collect_outputs(
@@ -275,6 +301,53 @@ class CacheStore:
     def _discard(self, key: str) -> None:
         shutil.rmtree(self._entries / key, ignore_errors=True)
 
+    def evict(self, protect: Optional[str] = None) -> dict:
+        """Evict least-recently-used entries until the configured bounds hold.
+
+        Bounds are ``max_entries`` (entry count) and ``max_bytes`` (total size on
+        disk), either of which may be ``None`` for "unbounded". Entries are
+        ordered by their directory mtime, which :meth:`_touch` advances on every
+        successful restore — so ``protect`` (the key just committed) is never
+        evicted for being new, only if it alone exceeds a bound.
+
+        Returns a summary dict ``{"removed_entries", "removed_bytes"}``.
+        """
+        if not self._entries.is_dir():
+            return {"removed_entries": 0, "removed_bytes": 0}
+        if self._max_entries is None and self._max_bytes is None:
+            return {"removed_entries": 0, "removed_bytes": 0}
+
+        candidates: List[Tuple[float, Path]] = []
+        for child in self._entries.iterdir():
+            if not child.is_dir() or child.name == protect:
+                continue
+            try:
+                mtime = child.stat().st_mtime
+            except OSError:
+                mtime = 0.0
+            candidates.append((mtime, child))
+        candidates.sort(key=lambda item: item[0])
+
+        total = sum(_dir_size(path) for _, path in candidates)
+        if protect is not None:
+            total += _dir_size(self._entries / protect)
+        count = len(candidates) + (1 if protect is not None else 0)
+
+        removed = 0
+        freed = 0
+        while candidates and (
+            (self._max_entries is not None and count > self._max_entries)
+            or (self._max_bytes is not None and total > self._max_bytes)
+        ):
+            _, path = candidates.pop(0)
+            size = _dir_size(path)
+            shutil.rmtree(path, ignore_errors=True)
+            removed += 1
+            freed += size
+            count -= 1
+            total -= size
+        return {"removed_entries": removed, "removed_bytes": freed}
+
     # -- inspection ---------------------------------------------------------
 
     def explain(
@@ -318,6 +391,8 @@ class CacheStore:
                 "entries": 0,
                 "size_bytes": 0,
                 "corrupted": 0,
+                "max_bytes": self._max_bytes,
+                "max_entries": self._max_entries,
             }
         entries = 0
         corrupted = 0
@@ -340,6 +415,8 @@ class CacheStore:
             "entries": entries,
             "size_bytes": size,
             "corrupted": corrupted,
+            "max_bytes": self._max_bytes,
+            "max_entries": self._max_entries,
         }
 
     def clean(self) -> dict:
