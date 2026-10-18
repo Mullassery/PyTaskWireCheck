@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CodeAtlas</title>
+<script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://unpkg.com/cytoscape-dagre@2.4.0/cytoscape-dagre.js"></script>
+<style>
+  body { margin: 0; font-family: -apple-system, sans-serif; }
+  #cy { width: 100vw; height: 100vh; }
+  header { padding: 12px 16px; border-bottom: 1px solid #eee; }
+</style>
+</head>
+<body>
+<header>
+  <strong>CodeAtlas</strong>
+  <p>Owns 38 symbols across 4 file(s).</p>
+</header>
+<div id="cy"></div>
+<script>
+const data = {"nodes": [{"data": {"id": "cache", "label": "cache", "description": "Owns 32 symbols across 4 file(s)."}}, {"data": {"id": "config", "label": "config", "description": "Owns 38 symbols across 4 file(s)."}}, {"data": {"id": "diagnostics", "label": "diagnostics", "description": "Owns 13 symbols across 2 file(s)."}}, {"data": {"id": "engine", "label": "engine", "description": "Owns 51 symbols across 6 file(s)."}}, {"data": {"id": "graph", "label": "graph", "description": "Owns 31 symbols across 5 file(s)."}}, {"data": {"id": "history", "label": "history", "description": "Owns 8 symbols across 2 file(s)."}}, {"data": {"id": "logging", "label": "logging", "description": "Owns 14 symbols across 3 file(s)."}}, {"data": {"id": "notifications", "label": "notifications", "description": "Owns 8 symbols across 3 file(s)."}}, {"data": {"id": "processes", "label": "processes", "description": "Owns 15 symbols across 3 file(s)."}}, {"data": {"id": "tui", "label": "tui", "description": "Owns 19 symbols across 3 file(s)."}}], "edges": [{"data": {"id": "edge_0", "source": "pytaskwirecheck", "target": "cache", "label": "calls"}}, {"data": {"id": "edge_1", "source": "pytaskwirecheck", "target": "tui", "label": "calls"}}, {"data": {"id": "edge_2", "source": "pytaskwirecheck", "target": "config", "label": "calls"}}, {"data": {"id": "edge_3", "source": "pytaskwirecheck", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_4", "source": "pytaskwirecheck", "target": "engine", "label": "calls"}}, {"data": {"id": "edge_5", "source": "pytaskwirecheck", "target": "graph", "label": "calls"}}, {"data": {"id": "edge_6", "source": "pytaskwirecheck", "target": "history", "label": "calls"}}, {"data": {"id": "edge_7", "source": "pytaskwirecheck", "target": "logging", "label": "calls"}}, {"data": {"id": "edge_8", "source": "pytaskwirecheck", "target": "notifications", "label": "calls"}}, {"data": {"id": "edge_9", "source": "pytaskwirecheck", "target": "processes", "label": "calls"}}, {"data": {"id": "edge_10", "source": "cache", "target": "config", "label": "calls"}}, {"data": {"id": "edge_11", "source": "cache", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_12", "source": "tui", "target": "engine", "label": "calls"}}, {"data": {"id": "edge_13", "source": "config", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_14", "source": "engine", "target": "config", "label": "calls"}}, {"data": {"id": "edge_15", "source": "engine", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_16", "source": "engine", "target": "graph", "label": "calls"}}, {"data": {"id": "edge_17", "source": "engine", "target": "processes", "label": "calls"}}, {"data": {"id": "edge_18", "source": "graph", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_19", "source": "history", "target": "config", "label": "calls"}}, {"data": {"id": "edge_20", "source": "history", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_21", "source": "history", "target": "engine", "label": "calls"}}, {"data": {"id": "edge_22", "source": "logging", "target": "config", "label": "calls"}}, {"data": {"id": "edge_23", "source": "processes", "target": "tui", "label": "calls"}}, {"data": {"id": "edge_24", "source": "processes", "target": "diagnostics", "label": "calls"}}, {"data": {"id": "edge_25", "source": "processes", "target": "engine", "label": "calls"}}]};
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements: data,
+  style: [
+    { selector: 'node', style: {
+      'label': 'data(label)',
+      'shape': 'round-rectangle',
+      'background-color': '#eef2ff',
+      'border-color': '#6366f1',
+      'border-width': 1,
+      'width': 'label',
+      'padding': '10px',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-size': '12px',
+    }},
+    { selector: 'edge', style: {
+      'label': 'data(label)',
+      'curve-style': 'bezier',
+      'target-arrow-shape': 'triangle',
+      'font-size': '10px',
+      'text-rotation': 'autorotate',
+    }}
+  ],
+  layout: { name: 'dagre', rankDir: 'LR' }
+});
+cy.on('tap', 'node', evt => {
+  const node = evt.target;
+  if (node.data('linkUrl')) { window.location.href = node.data('linkUrl'); }
+});
+</script>
+</body>
+</html>
