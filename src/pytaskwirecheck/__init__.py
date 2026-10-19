@@ -6,7 +6,7 @@ The public API is intentionally small: load a workflow, inspect its plan, and
 run it. See :mod:`pytaskwirecheck.api` for details.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from pytaskwirecheck.api import (  # noqa: E402
     Workflow,

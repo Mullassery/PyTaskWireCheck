@@ -47,6 +47,11 @@ Implemented the mid-term roadmap item **remote cache backend**:
 Verification: `PYTHONPATH=src python3 -m pytest -q` → 138 passed;
 `ruff check` / `ruff format --check` clean.
 
+## Implementation status
+
+Added `run --changed` affected-task selection (inputs + dependents) with tests.
+Version `0.3.0`.
+
 ## Remaining work / follow-ups
 
 - `explain` still assumes dependency cache keys are absent; a real run's diff

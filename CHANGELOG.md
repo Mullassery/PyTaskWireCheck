@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-19
+
+### Added
+- `run --changed [--since REV]`: select tasks whose declared inputs match files
+  changed since the Git revision, plus all dependents. No matches is a clean
+  no-op. Tests cover source→dependent propagation and no-match behavior.
+
 ## [0.2.0] - 2026-10-19
 
 ### Added

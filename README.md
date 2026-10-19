@@ -166,7 +166,9 @@ pytaskwirecheck [-C ROOT] [--config PATH] [--no-color] COMMAND ...
   history [--limit N] [--json]    show recent execution summaries
 ```
 
-`run` accepts task names and runs only those tasks plus their dependencies. Add
+`run` accepts task names and runs only those tasks plus their dependencies.
+`run --changed --since HEAD~1` runs only tasks affected by changed files and
+their dependents. Add
 `--json` for a machine-readable summary, and `-q` to silence progress.
 
 Set `cache.remote_url` (HTTP/S) to share cache entries across machines/CI; it
@@ -298,7 +300,7 @@ Read the full design in [docs/architecture.md](docs/architecture.md).
 
 ## Status
 
-PyTaskWireCheck is **0.2.0** — a complete, tested horizontal slice: config → graph →
+PyTaskWireCheck is **0.3.0** — a complete, tested horizontal slice: config → graph →
 scheduler → runner → cache → CLI → TUI → history → notifications. See
 [docs/implementation-status.md](docs/implementation-status.md) for the verified
 breakdown. It is pre-1.0, so the configuration schema is versioned (`version = 1`)

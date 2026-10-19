@@ -152,6 +152,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-cache", action="store_true", help="disable cache reads and writes"
     )
     p_run.add_argument(
+        "--changed",
+        action="store_true",
+        help="run only tasks affected by files changed since --since",
+    )
+    p_run.add_argument(
+        "--since",
+        default="HEAD~1",
+        help="git revision for --changed (default: HEAD~1)",
+    )
+    p_run.add_argument(
         "--max-workers", type=int, default=None, help="override worker count"
     )
     p_run.add_argument(
@@ -382,11 +392,24 @@ def cmd_plan(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     config = _load(args)
     graph = _prepare_graph(config)
-    try:
-        selected = resolve_targets(graph, args.tasks)
-    except GraphError as exc:
-        _err(sys.stderr, str(exc))
-        return EXIT_GRAPH
+    if args.changed:
+        from pytaskwirecheck.graph.affected import affected_tasks, changed_files
+
+        try:
+            changed = changed_files(config.project.root, args.since)
+        except ValueError as exc:
+            _err(sys.stderr, "cannot determine changed files: %s" % exc)
+            return EXIT_GRAPH
+        selected = affected_tasks(graph, changed)
+        if not selected:
+            print("No affected tasks.")
+            return EXIT_OK
+    else:
+        try:
+            selected = resolve_targets(graph, args.tasks)
+        except GraphError as exc:
+            _err(sys.stderr, str(exc))
+            return EXIT_GRAPH
 
     execution = config.execution
     if args.max_workers is not None:
