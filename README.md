@@ -306,10 +306,24 @@ scheduler → runner → cache → CLI → TUI → history → notifications. Se
 breakdown. It is pre-1.0, so the configuration schema is versioned (`version = 1`)
 and unsupported versions are rejected rather than guessed at.
 
+## Watch mode
+
+Rerun affected tasks when files change:
+
+```bash
+pip install "pytaskwirecheck[watch]"
+pytaskwirecheck watch
+pytaskwirecheck watch build test --debounce-ms 300
+```
+
+Watch mode maps changed paths to declared task inputs, expands to dependents,
+and invokes the normal scheduler/cache path. It uses the Rust-backed
+`watchfiles` watcher; there is no polling loop. Stop with Ctrl-C.
+
 ## Known issues and deferred work
 
 **Blocked / failed:**
-- Watch mode; Linux/Windows wheels.
+- Linux/Windows wheels.
 
 **Rejected / deferred:**
 - A server/daemon.

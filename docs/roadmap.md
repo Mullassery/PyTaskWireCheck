@@ -17,7 +17,9 @@ changes can be made honestly.
   between two runs.~~ Shipped: `explain TASK --against KEY|latest` diffs the
   current fingerprint against a stored cache entry (inputs, env names, command,
   dependencies, runtime, and more).
-- **Watch mode.** Re-run the affected subgraph when inputs change.
+- ~~**Watch mode.** Re-run the affected subgraph when inputs change.~~
+  Shipped as `pytaskwirecheck watch` with the optional `[watch]` extra
+  (`watchfiles`).
 - **Structured output.** A stable JSON schema for `run --json` across versions.
 
 ## Mid term

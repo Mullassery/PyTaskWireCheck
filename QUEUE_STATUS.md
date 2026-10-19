@@ -4,9 +4,10 @@ This file records what was shipped, what is blocked/failed, and what is rejected
 
 ## Shipped
 - Remote cache, fingerprint diff, affected-task selection (0.3.0).
+- `pytaskwirecheck watch` via the optional Rust-backed `watchfiles` extra.
 
 ## Blocked / failed
-- Watch mode; Linux/Windows wheels.
+- Linux/Windows wheels.
 
 ## Rejected / deferred
 - A server/daemon.

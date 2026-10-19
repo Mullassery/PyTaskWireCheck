@@ -193,6 +193,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.set_defaults(func=cmd_run)
 
+    # watch
+    p_watch = sub.add_parser("watch", help="rerun affected tasks when files change")
+    p_watch.add_argument(
+        "tasks",
+        nargs="*",
+        help="tasks to consider (default: all tasks affected by changes)",
+    )
+    p_watch.add_argument(
+        "--debounce-ms", type=int, default=300, help="debounce window (default: 300)"
+    )
+    p_watch.add_argument("--json", action="store_true", help="emit JSON run summaries")
+    p_watch.add_argument("-q", "--quiet", action="store_true")
+    p_watch.add_argument("--no-cache", action="store_true")
+    p_watch.add_argument("--no-output", action="store_true")
+    p_watch.set_defaults(func=cmd_watch)
+
     # cache
     p_cache = sub.add_parser("cache", help="inspect or clean the cache")
     cache_sub = p_cache.add_subparsers(dest="cache_command", metavar="ACTION")
@@ -499,6 +515,69 @@ def cmd_run(args: argparse.Namespace) -> int:
     if result.cancelled and not result.succeeded:
         return EXIT_INTERRUPTED
     return EXIT_OK if result.succeeded else EXIT_TASK_FAILURE
+
+
+# ---------------------------------------------------------------------------
+# Watch mode
+# ---------------------------------------------------------------------------
+
+
+def cmd_watch(args: argparse.Namespace) -> int:
+    """Watch the project and rerun tasks affected by changed files."""
+    try:
+        from watchfiles import watch
+    except ImportError:
+        _err(
+            sys.stderr,
+            "watch mode requires watchfiles. Install with "
+            '`pip install "pytaskwirecheck[watch]"` (or `pip install watchfiles`).',
+        )
+        return EXIT_USAGE
+
+    config = _load(args)
+    graph = _prepare_graph(config)
+    root = config.project.root
+    selected_scope: Optional[set[str]] = None
+    if args.tasks:
+        try:
+            selected_scope = resolve_targets(graph, list(args.tasks))
+        except GraphError as exc:
+            _err(sys.stderr, str(exc))
+            return EXIT_GRAPH
+
+    from pytaskwirecheck.graph.affected import affected_tasks
+
+    print("Watching %s for changes (Ctrl-C to stop)" % root, flush=True)
+    try:
+        for changes in watch(root, debounce=int(args.debounce_ms)):
+            changed_paths = {str(path.relative_to(root)) for _change, path in changes}
+            affected = affected_tasks(graph, changed_paths)
+            if selected_scope is not None:
+                affected &= selected_scope
+            if not affected:
+                print(
+                    "Changed: %s (no affected tasks)"
+                    % ", ".join(sorted(changed_paths)),
+                    flush=True,
+                )
+                continue
+            print(
+                "Changed: %s -> running %s"
+                % (", ".join(sorted(changed_paths)), ", ".join(sorted(affected))),
+                flush=True,
+            )
+            run_args = argparse.Namespace(**vars(args))
+            run_args.changed = False
+            run_args.since = "HEAD~1"
+            run_args.tasks = tuple(sorted(affected))
+            run_args.max_workers = None
+            run_args.fail_fast = None
+            run_args.tui = False
+            cmd_run(run_args)
+    except KeyboardInterrupt:  # pragma: no cover - interactive path
+        print("\nStopped watching.", flush=True)
+        return EXIT_INTERRUPTED
+    return EXIT_OK
 
 
 # ---------------------------------------------------------------------------
