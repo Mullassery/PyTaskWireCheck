@@ -306,6 +306,16 @@ scheduler → runner → cache → CLI → TUI → history → notifications. Se
 breakdown. It is pre-1.0, so the configuration schema is versioned (`version = 1`)
 and unsupported versions are rejected rather than guessed at.
 
+## Known issues and deferred work
+
+**Blocked / failed:**
+- Watch mode; Linux/Windows wheels.
+
+**Rejected / deferred:**
+- A server/daemon.
+
+Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+
 ## Queue status
 
 Shipped, blocked/failed, and rejected work for this repository is documented in
