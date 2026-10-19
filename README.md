@@ -306,6 +306,11 @@ scheduler → runner → cache → CLI → TUI → history → notifications. Se
 breakdown. It is pre-1.0, so the configuration schema is versioned (`version = 1`)
 and unsupported versions are rejected rather than guessed at.
 
+## Queue status
+
+Shipped, blocked/failed, and rejected work for this repository is documented in
+[`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+
 ## Contributing
 
 Issues and pull requests are welcome. Start with
