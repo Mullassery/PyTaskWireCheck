@@ -1,6 +1,6 @@
 # Roadmap
 
-> 2026-10-19 implementation findings: see [`../AUDIT_FINDINGS.md`](../AUDIT_FINDINGS.md).
+> 2026-10-19 implementation findings: see [`../AUDIT_FINDINGS.md`](internal/AUDIT_FINDINGS.md).
 
 PyTaskWireCheck 0.1.0 is a complete horizontal slice. This is where it is heading;
 nothing here is a commitment, and the configuration schema is versioned so that

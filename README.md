@@ -145,7 +145,7 @@ ok: 3 succeeded in 5.11s
 
 The 2026-10-19 implementation audit — including the `explain --against`
 fingerprint-diff work, verification results, and remaining gaps — is recorded
-in [`AUDIT_FINDINGS.md`](AUDIT_FINDINGS.md).
+in [`docs/internal/AUDIT_FINDINGS.md`](docs/internal/AUDIT_FINDINGS.md).
 
 ## Command-line reference
 
@@ -328,7 +328,7 @@ and invokes the normal scheduler/cache path. It uses the Rust-backed
 **Rejected / deferred:**
 - A server/daemon.
 
-Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+Full shipped/blocked/rejected detail: [`docs/internal/QUEUE_STATUS.md`](docs/internal/QUEUE_STATUS.md).
 
 ## Contributing
 
