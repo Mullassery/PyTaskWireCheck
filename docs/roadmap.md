@@ -20,7 +20,7 @@ changes can be made honestly.
 - ~~**Watch mode.** Re-run the affected subgraph when inputs change.~~
   Shipped as `pytaskwirecheck watch` with the optional `[watch]` extra
   (`watchfiles`).
-- **Structured output.** A stable JSON schema for `run --json` across versions.
+- ~~**Structured output.** A stable JSON schema for `run --json` across versions.~~ Shipped: every `run --json` summary carries `schema_version: 1` and `schemas/run-summary.schema.json`; a regression test keeps the schema in sync.
 
 ## Mid term
 

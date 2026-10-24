@@ -71,6 +71,10 @@ pytaskwirecheck run [TASKS...] [--no-cache] [--max-workers N]
 | `--no-output` | Do not stream task output |
 | `--tui` | Show a live dashboard (only when stdout is a TTY) |
 
+The `--json` summary is a versioned contract: `schema_version` is `1`, and the
+full schema is committed at
+[`schemas/run-summary.schema.json`](../schemas/run-summary.schema.json).
+
 ## `cache`
 
 ```bash

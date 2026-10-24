@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Mullassery/TaskWire/schemas/run-summary.schema.json",
+  "title": "PyTaskWireCheck run summary",
+  "description": "Schema for the JSON emitted by `pytaskwirecheck run --json` (schema_version 1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "succeeded",
+    "cancelled",
+    "duration_seconds",
+    "counts",
+    "tasks"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string"},
+    "succeeded": {"type": "boolean"},
+    "cancelled": {"type": "boolean"},
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "tasks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "exit_code",
+          "attempts",
+          "duration_seconds",
+          "cache_hit",
+          "message"
+        ],
+        "properties": {
+          "status": {"type": "string"},
+          "exit_code": {"type": ["integer", "null"]},
+          "attempts": {"type": "integer", "minimum": 0},
+          "duration_seconds": {"type": "number", "minimum": 0},
+          "cache_hit": {"type": "boolean"},
+          "message": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

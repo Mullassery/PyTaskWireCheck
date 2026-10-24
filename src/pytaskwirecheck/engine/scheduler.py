@@ -28,6 +28,9 @@ from pytaskwirecheck.engine.executor import TaskExecutor, TaskOutcome
 from pytaskwirecheck.engine.state import TaskRecord, TaskStatus
 from pytaskwirecheck.graph.model import TaskGraph
 
+#: Version of the ``run --json`` summary contract. Bump on breaking changes.
+RUN_SUMMARY_SCHEMA_VERSION = 1
+
 
 @dataclass
 class RunResult:
@@ -65,6 +68,7 @@ class RunResult:
                 "message": record.message,
             }
         return {
+            "schema_version": RUN_SUMMARY_SCHEMA_VERSION,
             "run_id": self.run_id,
             "succeeded": self.succeeded,
             "cancelled": self.cancelled,
