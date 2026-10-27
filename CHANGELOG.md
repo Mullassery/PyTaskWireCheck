@@ -73,5 +73,5 @@ The first release: a complete, tested horizontal slice.
   callbacks, and cooperative cancellation.
 - Documentation (`docs/`), CI, and a full test suite (132 tests).
 
-[Unreleased]: https://github.com/Mullassery/PyTaskWireCheck/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Mullassery/PyTaskWireCheck/releases/tag/v0.1.0
+[Unreleased]: ../PyTaskWireCheck/compare/v0.1.0...HEAD
+[0.1.0]: ../PyTaskWireCheck/releases/tag/v0.1.0

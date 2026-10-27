@@ -41,6 +41,6 @@ PyTaskWireCheck does not sandbox tasks — it is an orchestrator, not a security
 ## Reporting a vulnerability
 
 Please do not open a public issue for security problems. Report privately via
-GitHub's [Security Advisories](https://github.com/Mullassery/PyTaskWireCheck/security/advisories/new)
+GitHub's [Security Advisories](../PyTaskWireCheck/security/advisories/new)
 or email the maintainer. Include a minimal reproduction and the affected version.
 We aim to acknowledge reports within a few days.

@@ -15,7 +15,7 @@ Please **do not** open a public issue for security problems.
 
 Report privately in either of these ways:
 
-- GitHub [Security Advisories](https://github.com/Mullassery/PyTaskWireCheck/security/advisories/new)
+- GitHub [Security Advisories](../PyTaskWireCheck/security/advisories/new)
 - Email the maintainer (see the repository profile)
 
 Include:

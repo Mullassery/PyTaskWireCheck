@@ -6,7 +6,7 @@ welcome: bug reports, documentation improvements, tests, and code.
 ## Getting set up
 
 ```bash
-git clone https://github.com/Mullassery/PyTaskWireCheck
+git clone ../PyTaskWireCheck
 cd PyTaskWireCheck
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -40,7 +40,7 @@ age"). Explain the *why* in the body when it is not obvious.
 
 ## Reporting bugs and requesting features
 
-Use the [issue templates](https://github.com/Mullassery/PyTaskWireCheck/issues/new/choose).
+Use the [issue templates](../PyTaskWireCheck/issues/new/choose).
 For security issues, follow [SECURITY.md](SECURITY.md) instead of opening a
 public issue.
 

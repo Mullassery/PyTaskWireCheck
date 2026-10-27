@@ -3,7 +3,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/Mullassery/PyTaskWireCheck
+git clone ../PyTaskWireCheck
 cd PyTaskWireCheck
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate

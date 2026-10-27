@@ -9,7 +9,7 @@ order, runs independent work in parallel, retries the flaky parts, skips work
 that hasn't changed, and tells you exactly why — without a server, a daemon,
 or a single byte leaving your machine.
 
-[![CI](https://github.com/Mullassery/PyTaskWireCheck/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/PyTaskWireCheck/actions/workflows/ci.yml)
+[![CI](../PyTaskWireCheck/actions/workflows/ci.yml/badge.svg)](../PyTaskWireCheck/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/PyTaskWireCheck.svg)](https://pypi.org/project/PyTaskWireCheck/)
 [![Python versions](https://img.shields.io/pypi/pyversions/PyTaskWireCheck.svg)](https://pypi.org/project/PyTaskWireCheck/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -19,7 +19,7 @@ or a single byte leaving your machine.
 
 ---
 
-> **Not to be confused with the security tools in this family ([PyDeepMesh](https://github.com/Mullassery/PyDeepMesh), [PyDependencyCheck](https://github.com/Mullassery/PyDependencyCheck)):** despite the "Check" in its name, PyTaskWireCheck is a local task orchestrator, not a security scanner.
+> **Not to be confused with the security tools in this family ([PyDeepMesh](../PyDeepMesh), [PyDependencyCheck](../PyDependencyCheck)):** despite the "Check" in its name, PyTaskWireCheck is a local task orchestrator, not a security scanner.
 
 ## Which project do I need?
 
@@ -27,20 +27,20 @@ Part of the Mullassery open-source family. These tools have similar names — he
 
 | If you need to… | Use |
 | --- | --- |
-| Build a repository's dependency graph and match it against vulnerability advisories (Python, Rust, Node, containers) | [PyDeepMesh](https://github.com/Mullassery/PyDeepMesh) |
-| Understand *why* a Python dependency exists, who added it, and whether it is actually used | [PyDependencyCheck](https://github.com/Mullassery/PyDependencyCheck) |
-| Statically analyze a **dbt** project (risky tests, test blast radius, cost) | [PyDBTGuard](https://github.com/Mullassery/PyDBTGuard) |
-| Statically analyze **Apache Beam / Dataflow** pipelines (cost, hot keys, reliability) | [PyBeamGuard](https://github.com/Mullassery/PyBeamGuard) |
-| Validate **Airflow** DAGs and dbt runs | [PyAirflowTester](https://github.com/Mullassery/PyAirflowTester) |
-| Simulate cascading-failure **blast radius** across infrastructure, data pipelines, and AI systems | [PyBlastRadius](https://github.com/Mullassery/PyBlastRadius) |
-| Check the **quality of the data itself** at runtime (schema, drift, anomalies) | [StatGuardian](https://github.com/Mullassery/StatGuardian) |
-| Discover **devices, services, and vulnerabilities on a network** | [PyNetworkIntel](https://github.com/Mullassery/PyNetworkIntel) |
-| Discover and score **API security** risk (real traffic, agent/MCP, Cedar policy) | [PyAPICheck](https://github.com/Mullassery/PyAPICheck) |
-| Trace and root-cause **AI agent** failures | [PyAgentHound](https://github.com/Mullassery/PyAgentHound) |
-| Diagnose **RAG retrieval** failures | [PyVectorHound](https://github.com/Mullassery/PyVectorHound) |
-| Orchestrate **local, dependency-aware tasks** (DAG scheduler + content-addressed cache) | [PyTaskWireCheck](https://github.com/Mullassery/PyTaskWireCheck) |
+| Build a repository's dependency graph and match it against vulnerability advisories (Python, Rust, Node, containers) | [PyDeepMesh](../PyDeepMesh) |
+| Understand *why* a Python dependency exists, who added it, and whether it is actually used | [PyDependencyCheck](../PyDependencyCheck) |
+| Statically analyze a **dbt** project (risky tests, test blast radius, cost) | [PyDBTGuard](../PyDBTGuard) |
+| Statically analyze **Apache Beam / Dataflow** pipelines (cost, hot keys, reliability) | [PyBeamGuard](../PyBeamGuard) |
+| Validate **Airflow** DAGs and dbt runs | [PyAirflowTester](../PyAirflowTester) |
+| Simulate cascading-failure **blast radius** across infrastructure, data pipelines, and AI systems | [PyBlastRadius](../PyBlastRadius) |
+| Check the **quality of the data itself** at runtime (schema, drift, anomalies) | [StatGuardian](../StatGuardian) |
+| Discover **devices, services, and vulnerabilities on a network** | [PyNetworkIntel](../PyNetworkIntel) |
+| Discover and score **API security** risk (real traffic, agent/MCP, Cedar policy) | [PyAPICheck](../PyAPICheck) |
+| Trace and root-cause **AI agent** failures | [PyAgentHound](../PyAgentHound) |
+| Diagnose **RAG retrieval** failures | [PyVectorHound](../PyVectorHound) |
+| Orchestrate **local, dependency-aware tasks** (DAG scheduler + content-addressed cache) | [PyTaskWireCheck](../PyTaskWireCheck) |
 
-[Browse all projects →](https://github.com/Mullassery?tab=repositories)
+[Browse all projects →](../Mullassery-profile)
 
 ## Why PyTaskWireCheck
 
@@ -65,7 +65,7 @@ and which can be skipped because nothing they depend on has changed.
 ```bash
 pip install PyTaskWireCheck
 # or, for the bleeding edge:
-pip install "PyTaskWireCheck @ git+https://github.com/Mullassery/PyTaskWireCheck"
+pip install "PyTaskWireCheck @ git+../PyTaskWireCheck"
 ```
 
 PyTaskWireCheck targets Python **3.9 – 3.13**. The import name and the command are both
